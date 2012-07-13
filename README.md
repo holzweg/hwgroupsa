@@ -1,7 +1,7 @@
 Holzweg Group Site Access Extension
 =======
 
-What is the Group Site Access Extnsion?
+What is the Group Site Access Extension?
 ----------------------------------------------------------
 This extension enables you to use subdirectories inside your siteaccess settings directories to create additional overrides to siteaccess settings (e.g. for different languages)
 
