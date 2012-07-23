@@ -344,11 +344,12 @@ class eZSiteAccess
 
                         foreach ( $matchMapItems as $matchMapItem )
                         {
-                            $matchHost       = $matchMapItem[0];
-                            $matchURIArray   = explode("|", $matchMapItem[1]);
-                            $matchURI        = false;
-                            $matchAccess     = $matchMapItem[2];
-                            $matchHostMethod = isset( $matchMapItem[3] ) ? $matchMapItem[3] : $defaultHostMatchMethod;
+                            $matchHost              = $matchMapItem[0];
+                            $matchURIArray          = explode("|", $matchMapItem[1]);
+                            $matchURI               = false;
+                            $matchAccess            = $matchMapItem[2];
+                            $matchHostMethod        = isset( $matchMapItem[3] ) ? $matchMapItem[3] : $defaultHostMatchMethod;
+                            $isDefaultSubSiteaccess = false;
 
                             foreach($matchURIArray as $matchURIIterator) {
                                 if ( $matchURIIterator !== '' && preg_match( "@^$matchURIIterator\b@", $uriString ) ) {
@@ -356,8 +357,11 @@ class eZSiteAccess
                                     break;
                                 }
                             }
+
                             if(!$matchURI) {
-                                continue;
+                                // Set default (first) subsiteaccess to match
+                                $matchURI = $matchURIArray[0];
+                                $isDefaultSubSiteaccess = true;
                             }
 
                             switch( $matchHostMethod )
@@ -391,16 +395,24 @@ class eZSiteAccess
                                 if ( $matchURI !== '' )
                                 {
                                     $matchURIFolders = explode( '/', $matchURI );
-                                    $uri->increase( count( $matchURIFolders ) );
+                                    if($isDefaultSubSiteaccess !== true) {
+                                        $uri->increase( count( $matchURIFolders ) );
+                                    }
                                     $uri->dropBase();
                                     $access['uri_part'] = $matchURIFolders;
                                 }
-
 
                                 $access['sub'] = $matchURI;
                                 $access['subs'] = $matchURIArray;
                                 $access['name'] = $matchAccess;
                                 $access['type'] = $type;
+
+                                // Redirect if enabled
+                                if($isDefaultSubSiteaccess === true && $ini->variable( 'SiteAccessSettings', 'RedirectDefaultSubSiteaccess' ) == "enabled") {
+                                    $redirectURI = "$matchURI/" . $uri->uriString();
+                                    header("Location: $redirectURI");
+                                    eZExecution::cleanExit();
+                                }
 
                                 return $access;
                             }
