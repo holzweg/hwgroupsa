@@ -409,7 +409,12 @@ class eZSiteAccess
 
                                 // Redirect if enabled
                                 if($isDefaultSubSiteaccess === true && $ini->variable( 'SiteAccessSettings', 'RedirectDefaultSubSiteaccess' ) == "enabled") {
-                                    $redirectURI = "$matchURI/" . $uri->uriString();
+                                    $host = $_SERVER["HTTP_HOST"];
+                                    $queryString = $_SERVER["QUERY_STRING"];
+                                    if($queryString != "") {
+                                        $queryString = "?$queryString";
+                                    }
+                                    $redirectURI = "/$matchURI/" . $uri->uriString() . $queryString;
                                     header("Location: $redirectURI");
                                     eZExecution::cleanExit();
                                 }
