@@ -402,6 +402,11 @@ class eZSiteAccess
                                     $access['uri_part'] = $matchURIFolders;
                                 }
 
+                                if( $matchAccess == "" ){
+                                    $matchAccess = $matchURI;
+                                }
+
+
                                 $access['sub'] = $matchURI;
                                 $access['subs'] = $matchURIArray;
                                 $access['name'] = $matchAccess;
