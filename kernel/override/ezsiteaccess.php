@@ -39,6 +39,7 @@ class eZSiteAccess
     */
     function eZSiteAccess()
     {
+
     }
 
     static function siteAccessList()
@@ -429,6 +430,116 @@ class eZSiteAccess
                         }
                     }
                 } break;
+                case 'servervar_group':
+                {
+                    $type = eZSiteAccess::TYPE_HTTP_HOST_URI_GROUP;
+                    if ( $serversiteaccess = eZSys::serverVariable( $ini->variable( 'SiteAccessSettings', 'ServerVariableName' ), true ) )
+                    {
+                        
+
+                        $uriString = $uri->elements();
+                        $matchMapItems = $ini->variableArray( 'SiteAccessSettings', 'HostUriGroupMatchMapItems' );
+                        $defaultHostMatchMethod = $ini->variable( 'SiteAccessSettings', 'HostUriMatchMethodDefault' );
+
+                        foreach ( $matchMapItems as $matchMapItem )
+                        {
+                            $matchHost              = $matchMapItem[0];
+                            $matchURIArray          = explode("|", $matchMapItem[1]);
+                            $matchURI               = false;
+                            $matchAccess            = $matchMapItem[2];
+                            $matchHostMethod        = isset( $matchMapItem[3] ) ? $matchMapItem[3] : $defaultHostMatchMethod;
+                            $isDefaultSubSiteaccess = false;
+
+                            foreach($matchURIArray as $matchURIIterator) {
+                                if ( $matchURIIterator !== '' && preg_match( "@^$matchURIIterator\b@", $uriString ) ) {
+                                    $matchURI = $matchURIIterator;
+                                    break;
+                                }
+                            }
+
+                            if(!$matchURI) {
+                                // Set default defined by browser language...
+                                $matchURI = $matchURIArray[0];
+                                $isDefaultSubSiteaccess = true;
+                                $access['sub'] = $serversiteaccess;
+                                $host = $_SERVER["HTTP_HOST"];
+                                
+                                $redirectURI = "http://".$host."/".$serversiteaccess;
+                                header("Location: $redirectURI");
+                                eZExecution::cleanExit();
+                            } else {
+                                // Set siteaccess defined by the path (www.klepsch.com/DE/..)
+                                $access['sub'] = $matchURI;
+                            }
+
+                            switch( $matchHostMethod )
+                            {
+                                case 'strict':
+                                {
+                                    $hasHostMatch = ( $matchHost === $host );
+                                } break;
+                                case 'start':
+                                {
+                                    $hasHostMatch = ( strpos($host, $matchHost) === 0 );
+                                } break;
+                                case 'end':
+                                {
+                                    $hasHostMatch = ( strstr($host, $matchHost) === $matchHost );
+                                } break;
+                                case 'part':
+                                {
+                                    $hasHostMatch = ( strpos($host, $matchHost) !== false );
+                                } break;
+                                default:
+                                {
+                                    $hasHostMatch = false;
+                                    eZDebug::writeError( "Unknown host_uri host match: $matchHostMethod", "access" );
+                                } break;
+                            }
+
+                            if ( $hasHostMatch )
+                            {
+
+                                if ( $matchURI !== '' )
+                                {
+                                    $matchURIFolders = explode( '/', $matchURI );
+                                    if($isDefaultSubSiteaccess !== true) {
+                                        $uri->increase( count( $matchURIFolders ) );
+                                    }
+                                    $uri->dropBase();
+                                    $access['uri_part'] = $matchURIFolders;
+                                }
+
+                                if( $matchAccess == "" ){
+                                    $matchAccess = $matchURI;
+                                }
+
+
+                                
+                                $access['subs'] = $matchURIArray;
+                                $access['name'] = $matchAccess;
+                                $access['type'] = $type;
+                                
+                                //$access['type'] = eZSiteAccess::TYPE_SERVER_VAR;
+
+                                // Redirect if enabled
+                                if($isDefaultSubSiteaccess === true && $ini->variable( 'SiteAccessSettings', 'RedirectDefaultSubSiteaccess' ) == "enabled") {
+                                    $host = $_SERVER["HTTP_HOST"];
+                                    $queryString = $_SERVER["QUERY_STRING"];
+                                    if($queryString != "") {
+                                        $queryString = "?$queryString";
+                                    }
+                                    $redirectURI = "/$matchURI/" . $uri->uriString() . $queryString;
+                                    header("Location: $redirectURI");
+                                    eZExecution::cleanExit();
+                                }
+                                
+                                return $access;
+                            }
+                        }
+                    } else
+                        continue;
+                } break;
                 case 'index':
                 {
                     $type = eZSiteAccess::TYPE_INDEX_FILE;
@@ -591,6 +702,7 @@ class eZSiteAccess
     {
         $name = $access['name'];
         $GLOBALS['eZCurrentAccess'] =& $access;
+        
         if ( $siteINI !== null )
         {
             $ini = $siteINI;
