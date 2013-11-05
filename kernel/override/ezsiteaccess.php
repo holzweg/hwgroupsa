@@ -458,11 +458,17 @@ class eZSiteAccess
                             }
 
                             if(!$matchURI) {
-                                // Set default (first) subsiteaccess to match
+                                // Set default defined by browser language...
                                 $matchURI = $matchURIArray[0];
                                 $isDefaultSubSiteaccess = true;
                                 $access['sub'] = $serversiteaccess;
+                                $host = $_SERVER["HTTP_HOST"];
+                                
+                                $redirectURI = "http://".$host."/".$serversiteaccess;
+                                header("Location: $redirectURI");
+                                eZExecution::cleanExit();
                             } else {
+                                // Set siteaccess defined by the path (www.klepsch.com/DE/..)
                                 $access['sub'] = $matchURI;
                             }
 
