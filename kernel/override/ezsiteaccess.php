@@ -485,21 +485,7 @@ class eZSiteAccess
                                 } break;
                             }
 
-                            if(!$matchURI) {
-                                    if($matchAccess != "admin") {
-                                        // Set default defined by browser language... for all siteaccesses except admin
-                                        $access['type'] = eZSiteAccess::TYPE_SERVER_VAR;                             
-                                        $host = $_SERVER["HTTP_HOST"];
-                                        $redirectURI = "http://".$host."/".$serversiteaccess;
-                                        
-                                        header("Location: $redirectURI");
-                                        eZExecution::cleanExit();
-                                    } else {
-                                        // If Admin Siteaccess default subsiteaccess is the first one
-                                        $matchURI = $matchURIArray[0];
-                                        $isDefaultSubSiteaccess = true;
-                                    }
-                                }
+                            
 
                             if ( $hasHostMatch )
                             {
@@ -518,7 +504,30 @@ class eZSiteAccess
                                     $matchAccess = $matchURI;
                                 }
 
-                                
+                                if(!$matchURI) {
+                                    if($matchAccess != "admin") {
+                                        // Set default defined by browser language... for all siteaccesses except admin
+                                        if(in_array($serversiteaccess, $matchURIArray)) {
+                                            $access['sub'] = $matchURI;
+                                            $access['subs'] = $matchURIArray;
+                                            $access['name'] = $matchAccess;
+                                            $access['type'] = eZSiteAccess::TYPE_SERVER_VAR;                         
+                                            $host = $_SERVER["HTTP_HOST"];
+                                            $redirectURI = "http://".$host."/".$serversiteaccess;
+                                            header("Location: $redirectURI");
+                                            eZExecution::cleanExit();
+                                        } else {
+                                            $matchURI = $matchURIArray[0];
+                                            $redirectURI = "http://".$host."/".$matchURI;
+                                            header("Location: $redirectURI");
+                                            eZExecution::cleanExit();
+                                        }  
+                                    } else {
+                                        // If Admin Siteaccess default subsiteaccess is the first one
+                                        $matchURI = $matchURIArray[0];
+                                        $isDefaultSubSiteaccess = true;
+                                    }
+                                }
                                 
                                 $access['sub'] = $matchURI;
                                 $access['subs'] = $matchURIArray;
@@ -533,6 +542,7 @@ class eZSiteAccess
                                         $queryString = "?$queryString";
                                     }
                                     $redirectURI = "/$matchURI/" . $uri->uriString() . $queryString;
+
                                     header("Location: $redirectURI");
                                     eZExecution::cleanExit();
                                 }
