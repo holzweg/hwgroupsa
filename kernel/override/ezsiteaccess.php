@@ -459,6 +459,12 @@ class eZSiteAccess
                             }
 
                             
+                              
+                            /*if(!$matchURI) {
+                                // Set default (first) subsiteaccess to match
+                                $matchURI = $matchURIArray[0];
+                                $isDefaultSubSiteaccess = true;
+                            }*/
 
                             switch( $matchHostMethod )
                             {
@@ -504,19 +510,18 @@ class eZSiteAccess
                                     $matchAccess = $matchURI;
                                 }
 
+                                
                                 if(!$matchURI) {
                                     if($matchAccess != "admin") {
-                                        // Set default defined by browser language... for all siteaccesses except admin
-                                        if(in_array($serversiteaccess, $matchURIArray)) {
-                                            $access['sub'] = $matchURI;
-                                            $access['subs'] = $matchURIArray;
-                                            $access['name'] = $matchAccess;
-                                            $access['type'] = eZSiteAccess::TYPE_SERVER_VAR;                         
+                                        // Set default defined by browser language... for all siteaccesses except admin && if subsiteaccess is available
+                                        if(in_array($serversiteaccess, $matchURIArray)) {                  
                                             $host = $_SERVER["HTTP_HOST"];
                                             $redirectURI = "http://".$host."/".$serversiteaccess;
                                             header("Location: $redirectURI");
                                             eZExecution::cleanExit();
+
                                         } else {
+                                        // If Browser Language is not available as subsiteaccess redirect to first subsiteaccess
                                             $matchURI = $matchURIArray[0];
                                             $redirectURI = "http://".$host."/".$matchURI;
                                             header("Location: $redirectURI");
@@ -524,10 +529,13 @@ class eZSiteAccess
                                         }  
                                     } else {
                                         // If Admin Siteaccess default subsiteaccess is the first one
+
                                         $matchURI = $matchURIArray[0];
+                                        $access["uri_part"] = array("en");
                                         $isDefaultSubSiteaccess = true;
                                     }
                                 }
+                                
                                 
                                 $access['sub'] = $matchURI;
                                 $access['subs'] = $matchURIArray;
@@ -546,7 +554,7 @@ class eZSiteAccess
                                     header("Location: $redirectURI");
                                     eZExecution::cleanExit();
                                 }
-                                
+                               
                                 return $access;
                             }
                         }
