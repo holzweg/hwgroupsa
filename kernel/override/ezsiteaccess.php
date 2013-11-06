@@ -424,9 +424,7 @@ class eZSiteAccess
                                     header("Location: $redirectURI");
                                     eZExecution::cleanExit();
                                 }
-                                /*echo "<pre>";
-                                var_dump($access);
-                                echo "</pre>";*/
+
                                 return $access;
                             }
                         }
@@ -538,9 +536,6 @@ class eZSiteAccess
                                     header("Location: $redirectURI");
                                     eZExecution::cleanExit();
                                 }
-                                /*echo "<pre>";
-                                var_dump($access);
-                                echo "</pre>";*/
                                 
                                 return $access;
                             }
