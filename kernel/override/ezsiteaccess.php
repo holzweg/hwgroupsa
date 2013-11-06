@@ -432,6 +432,7 @@ class eZSiteAccess
                 } break;
                 case 'servervar_group':
                 {
+
                     $type = eZSiteAccess::TYPE_HTTP_HOST_URI_GROUP;
                     if ( $serversiteaccess = eZSys::serverVariable( $ini->variable( 'SiteAccessSettings', 'ServerVariableName' ), true ) )
                     {
@@ -457,20 +458,7 @@ class eZSiteAccess
                                 }
                             }
 
-                            if(!$matchURI) {
-                                // Set default defined by browser language...
-                                $matchURI = $matchURIArray[0];
-                                $isDefaultSubSiteaccess = true;
-                                $access['sub'] = $serversiteaccess;
-                                $host = $_SERVER["HTTP_HOST"];
-                                
-                                $redirectURI = "http://".$host."/".$serversiteaccess;
-                                header("Location: $redirectURI");
-                                eZExecution::cleanExit();
-                            } else {
-                                // Set siteaccess defined by the path (www.klepsch.com/DE/..)
-                                $access['sub'] = $matchURI;
-                            }
+                            
 
                             switch( $matchHostMethod )
                             {
@@ -497,6 +485,22 @@ class eZSiteAccess
                                 } break;
                             }
 
+                            if(!$matchURI) {
+                                    if($matchAccess != "admin") {
+                                        // Set default defined by browser language... for all siteaccesses except admin
+                                        $access['type'] = eZSiteAccess::TYPE_SERVER_VAR;                             
+                                        $host = $_SERVER["HTTP_HOST"];
+                                        $redirectURI = "http://".$host."/".$serversiteaccess;
+                                        
+                                        header("Location: $redirectURI");
+                                        eZExecution::cleanExit();
+                                    } else {
+                                        // If Admin Siteaccess default subsiteaccess is the first one
+                                        $matchURI = $matchURIArray[0];
+                                        $isDefaultSubSiteaccess = true;
+                                    }
+                                }
+
                             if ( $hasHostMatch )
                             {
 
@@ -514,13 +518,12 @@ class eZSiteAccess
                                     $matchAccess = $matchURI;
                                 }
 
-
                                 
+                                
+                                $access['sub'] = $matchURI;
                                 $access['subs'] = $matchURIArray;
                                 $access['name'] = $matchAccess;
                                 $access['type'] = $type;
-                                
-                                //$access['type'] = eZSiteAccess::TYPE_SERVER_VAR;
 
                                 // Redirect if enabled
                                 if($isDefaultSubSiteaccess === true && $ini->variable( 'SiteAccessSettings', 'RedirectDefaultSubSiteaccess' ) == "enabled") {
