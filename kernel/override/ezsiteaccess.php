@@ -424,9 +424,7 @@ class eZSiteAccess
                                     header("Location: $redirectURI");
                                     eZExecution::cleanExit();
                                 }
-                                echo "<pre>";
-                                var_dump($access);
-                                echo "</pre>";
+                                
                                 return $access;
                             }
                         }
@@ -520,7 +518,11 @@ class eZSiteAccess
                                         if(in_array($serversiteaccess, $matchURIArray)) {  
 
                                             $host = $_SERVER["HTTP_HOST"];
-                                            $redirectURI = "http://".$host."/".$serversiteaccess;
+                                            $path = $_SERVER["REQUEST_URI"];
+                                            $redirectURI = "http://" . $host . "/" . $serversiteaccess . $path;
+                                            
+
+                                           
                                             header("Location: $redirectURI");
                                             eZExecution::cleanExit();
 
@@ -528,7 +530,7 @@ class eZSiteAccess
 
                                         // If Browser Language is not available as subsiteaccess redirect to first subsiteaccess
                                             $matchURI = $matchURIArray[0];
-                                            $redirectURI = "http://".$host."/".$matchURI;
+                                            $redirectURI = "http://" . $host . "/" . $matchURI . $path;
                                             header("Location: $redirectURI");
                                             eZExecution::cleanExit();
                                         }  
