@@ -519,7 +519,7 @@ class eZSiteAccess
 
                                             $host = $_SERVER["HTTP_HOST"];
                                             $path = $_SERVER["REQUEST_URI"];
-                                            $redirectURI = "http://" . $host . "/" . $serversiteaccess . $path;
+                                            $redirectURI = "https://" . $host . "/" . $serversiteaccess . $path;
                                             
 
                                            
@@ -530,7 +530,7 @@ class eZSiteAccess
 
                                         // If Browser Language is not available as subsiteaccess redirect to first subsiteaccess
                                             $matchURI = $matchURIArray[0];
-                                            $redirectURI = "http://" . $host . "/" . $matchURI . $path;
+                                            $redirectURI = "https://" . $host . "/" . $matchURI . $path;
                                             header("Location: $redirectURI");
                                             eZExecution::cleanExit();
                                         }  
